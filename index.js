@@ -1,68 +1,57 @@
-const cors=require("cors");
-const express=require("express");
+const express = require('express');
+const bodyParser = require('body-parser');
 const mongoose=require("mongoose");
-const bodyParser=require("body-parser");
-const port =process.env.PORT||5000;
-const corsOptions = {
-    origin: true, 
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,get,head,put,patch,post,delete',
-  credentials: true,
-    
-
-}
-const app=express();
+const port = process.env.PORT||5000;
+const cors=require("cors");
+const path=require("path");
 
 
-
+const app = express();
 app.use(express.json());
-app.use(cors(corsOptions));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:false}));
-app.use(express.static("public"));
+app.use(cors());
+app.use(express.static("./public"));
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.get("/",(req,res)=>{
+    res.send("home page");
+});
+
+const database=mongoose.connect("mongodb://127.0.0.1:27017/ABCDEF");
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/Harsh");
-
-const userSchema=new mongoose.Schema({
+const schema=new mongoose.Schema({
     username:{
         type:String,
-        required:true,
+        required:true
     },
     email:{
         type:String,
         required:true
     }
 });
-const User=new mongoose.model("user",userSchema);
+const User=new mongoose.model("User",schema);
+
 
 app.get("/",(req,res)=>{
-    console.log("hii");
+    res.status(200).send("home page");
+
 });
 app.post("/submit",async(req,res)=>{
-    const {username,email}=req.body;
-    res.status(200).json("data send");
-    const user=await User({
-        username:username,
-        email:email
-    });
-    await user.save();
-    console.log(user);
-    
+ const Username=req.body.username;
+ const Email=req.body.email;
+const user=await new User({
+    username:Username,email:Email
 });
+await user.save();
+res.sendFile(path.join(__dirname,"./public/harsh.html"));
 
 
-
-
-
-
-
-
-
-app.get("/",(req,res)=>{
-    res.send("home page");
-});
-
-
-app.listen(port,()=>{
-    console.log(`server start at the port of ${port}`)
 })
+
+
+
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
